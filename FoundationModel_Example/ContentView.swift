@@ -1,21 +1,28 @@
-//
-//  ContentView.swift
-//  FoundationModel_Example
-//
-//  Created by Enpointe on 17/04/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = FoundationModelsViewModel()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            TabView {
+                ChatDemoView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Chat", systemImage: "message")
+                    }
+
+                StructuredOutputDemoView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Structured", systemImage: "list.bullet.clipboard")
+                    }
+
+                ToolCallingDemoView(viewModel: viewModel)
+                    .tabItem {
+                        Label("Tools", systemImage: "hammer")
+                    }
+            }
+            .navigationTitle("Foundation Models")
         }
-        .padding()
     }
 }
 
