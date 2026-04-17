@@ -368,3 +368,21 @@ Common root causes and handling:
   Simplify `@Generable` schema and `@Guide` constraints.
 
 In this sample, `AIService` now maps generation/tool errors to actionable user messages and includes a fallback path in the tool demo.
+
+### `com.apple.UnifiedAssetFramework Code=5000` (Model Catalog)
+
+If logs contain:
+- `Error Domain=com.apple.UnifiedAssetFramework Code=5000`
+- `There are no underlying assets ... for asset set com.apple.modelcatalog`
+- `ModelManagerError ... Code=1026`
+
+then the device does not currently have usable Apple Intelligence model assets.
+
+Checklist:
+1. Verify device is Apple Intelligence-compatible.
+2. Ensure Apple Intelligence is enabled in **Settings**.
+3. Keep device on **Wi‑Fi + power** until model download completes.
+4. Reboot device after enabling Apple Intelligence.
+5. Re-test on a real device (simulator support can differ by seed/version).
+
+The repeated `CHHapticPattern ... hapticpatternlibrary.plist` lines are keyboard/haptic warnings and are not the root cause of Foundation Models generation failure.

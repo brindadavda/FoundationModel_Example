@@ -46,10 +46,14 @@ final class AIService {
     }
 
     func prewarmIfNeeded() async {
+        guard case .available = model.availability else {
+            return
+        }
+
         do {
             try await session.prewarm(promptPrefix: "User asks general productivity questions.")
         } catch {
-            // Ignore prewarm errors; requests can still proceed.
+            // Prewarm is optional. Keep this silent in production logs to avoid noisy console output.
         }
     }
 
@@ -112,6 +116,9 @@ final class AIService {
     }
 
     func userFacingErrorMessage(for error: Error) -> String {
+        if let modelCatalogMessage = modelCatalogErrorMessage(from: error as NSError) {
+            return modelCatalogMessage
+        }
         if let appError = error as? AppError {
             return appError.localizedDescription
         }
@@ -146,6 +153,38 @@ final class AIService {
         @unknown default:
             return "Generation failed with an unknown Foundation Models error. Retry after checking availability and prompt size."
         }
+    }
+
+    private func modelCatalogErrorMessage(from error: NSError) -> String? {
+        // Common runtime issue when Apple Intelligence model assets aren't installed or are unavailable.
+        if error.domain == "com.apple.UnifiedAssetFramework", error.code == 5000 {
+            return """
+            Apple Intelligence model assets are missing on this device (Model Catalog error 5000).
+            Open Settings → Apple Intelligence, ensure it is enabled, connect to Wi‑Fi + power, and wait for model download to complete.
+            """
+        }
+
+        if error.domain == "ModelManagerServices.ModelManagerError", error.code == 1026 {
+            return """
+            The model manager couldn't resolve required assets.
+            Re-enable Apple Intelligence, reboot the device, then retry once model assets finish downloading.
+            """
+        }
+
+        // Recursively inspect nested errors (`NSUnderlyingError`, arrays in `NSDetailedErrors`) for catalog failures.
+        let userInfo = error.userInfo
+        if let nested = userInfo[NSUnderlyingErrorKey] as? NSError,
+           let message = modelCatalogErrorMessage(from: nested) {
+            return message
+        }
+        if let nestedList = userInfo[NSDetailedErrorsKey] as? [NSError] {
+            for nested in nestedList {
+                if let message = modelCatalogErrorMessage(from: nested) {
+                    return message
+                }
+            }
+        }
+        return nil
     }
 }
 
