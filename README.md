@@ -343,3 +343,28 @@ Foundation Models APIs may evolve between iOS 26.x releases. Keep an eye on:
 - New use cases or guardrail options in `SystemLanguageModel`
 
 Always re-validate your app with latest Apple documentation and SDK release notes.
+
+---
+
+## 19) Troubleshooting common runtime errors
+
+### `FoundationModels.LanguageModelSession.GenerationError error -1`
+
+If your UI shows a generic message like:
+> “The operation couldn’t be completed. (FoundationModels.LanguageModelSession.GenerationError error -1.)”
+
+it usually means Foundation Models threw a typed `GenerationError`, but the UI only displayed a generic localized fallback.
+
+Common root causes and handling:
+- **Model assets unavailable** (`assetsUnavailable`)  
+  Ensure Apple Intelligence is enabled and model assets are downloaded.
+- **Context too large** (`exceededContextWindowSize`)  
+  Start a new session and shorten instructions/prompt/output length.
+- **Unsupported locale** (`unsupportedLanguageOrLocale`)  
+  Keep prompts in supported locales, check locale support in advance.
+- **Guardrail/refusal** (`guardrailViolation`, `refusal`)  
+  Rephrase prompts to safer, clearer, app-focused requests.
+- **Guided output decode/schema issues** (`decodingFailure`, `unsupportedGuide`)  
+  Simplify `@Generable` schema and `@Guide` constraints.
+
+In this sample, `AIService` now maps generation/tool errors to actionable user messages and includes a fallback path in the tool demo.

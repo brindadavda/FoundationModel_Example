@@ -73,7 +73,7 @@ final class FoundationModelsViewModel: ObservableObject {
         do {
             try await operation()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = service.userFacingErrorMessage(for: error)
         }
     }
 }
